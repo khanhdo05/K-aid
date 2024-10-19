@@ -1,33 +1,64 @@
 import React, { useState } from 'react';
 import { View, Text, Button, ActivityIndicator } from 'react-native';
 import axios from 'axios';
+import { Audio } from 'expo-av';
 
 export default function EmergencyScreen() {
-  const [response, setResponse] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [recording, setRecording] = useState<null | Audio.Recording>(null);
+  const [message, setMessage] = useState('');
 
-  const handleEmergency = async () => {
-    setLoading(true);
+  const setAudioMode = async () => {
+    await Audio.setAudioModeAsync({
+      playsInSilentModeIOS: true,
+      allowsRecordingIOS: true,
+    });
+  };
 
-    // Call the API to process emergency request (example API calls)
+  const startRecording = async () => {
     try {
-      const res = await axios.post('YOUR_BACKEND_ENDPOINT', {
-        message: "I can't breathe",
-      });
-      setResponse(res.data);
+      const { status } = await Audio.requestPermissionsAsync();
+      await setAudioMode(); // Set audio mode before requesting permissions
+      if (status !== 'granted') {
+        console.error('Permission to access audio was denied');
+        return;
+      }
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+      setRecording(recording);
+      console.log('Recording started');
     } catch (error) {
-      setResponse('Error processing request.');
-    } finally {
-      setLoading(false);
+      console.error('startRecording error: ', error);
+    }
+  };
+
+  const stopRecording = async () => {
+    if (recording) {
+      setRecording(null);
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      const messageStop = 'Recording stopped and stored at ' + uri;
+      console.log(messageStop);
+      setMessage(messageStop);
+      // Optional: Send the recorded audio to the backend here
+      //await uploadAudio(uri);
     }
   };
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Describe your emergency</Text>
-      <Button title="Simulate Emergency" onPress={handleEmergency} />
-      {loading && <ActivityIndicator size="large" />}
-      {response && <Text>{response}</Text>}
+      <Text>{message}</Text>
+      <Button
+        title="Start Recording"
+        onPress={startRecording}
+        disabled={recording !== null}
+      />
+      <Button
+        title="Stop Recording"
+        onPress={stopRecording}
+        disabled={recording === null}
+      />
     </View>
   );
 }
