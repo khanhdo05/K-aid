@@ -1,7 +1,7 @@
 import {
-    DarkTheme,
-    DefaultTheme,
-    ThemeProvider,
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
@@ -12,36 +12,40 @@ import "react-native-reanimated";
 import { useColorScheme } from "@/hooks/useColorScheme";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync().then(r => console.log("SplashScreen.preventAutoHideAsync", r));
+SplashScreen.preventAutoHideAsync().then((r) =>
+  console.log("SplashScreen.preventAutoHideAsync", r),
+);
 
 export default function RootLayout() {
-    const colorScheme = useColorScheme();
-    const [loaded] = useFonts({
-        SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
-        SegoeUI: require("../assets/fonts/Segoe-UI.ttf"),
-    });
+  const colorScheme = useColorScheme();
+  const [loaded] = useFonts({
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    SegoeUI: require("../assets/fonts/Segoe-UI.ttf"),
+  });
 
-    useEffect(() => {
-        if (loaded) {
-            SplashScreen.hideAsync().then(r => console.log("SplashScreen.hideAsync", r));
-        }
-    }, [loaded]);
-
-    if (!loaded) {
-        return null;
+  useEffect(() => {
+    if (loaded) {
+      SplashScreen.hideAsync().then((r) =>
+        console.log("SplashScreen.hideAsync", r),
+      );
     }
+  }, [loaded]);
 
-    return (
-        <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-            <Stack
-                screenOptions={{
-                    headerShown: false,
-                }}
-            >
-                <Stack.Screen name="index" />
-                <Stack.Screen name="(routes)/emergency/index" />
-                <Stack.Screen name="(routes)/home/index" />
-            </Stack>
-        </ThemeProvider>
-    );
+  if (!loaded) {
+    return null;
+  }
+
+  return (
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(routes)/emergency/index" />
+        <Stack.Screen name="(routes)/home/index" />
+      </Stack>
+    </ThemeProvider>
+  );
 }
